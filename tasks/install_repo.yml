@@ -1,5 +1,5 @@
-
-- name: dnf_repos - set info
+### Set vars
+- name: dnf_repos - Set info
   ansible.builtin.set_fact:
     dnf_repos_repo_to_install: >
       {{
@@ -8,7 +8,7 @@
         first
       }}
 
-- name: dnf-repos - import a repo setting - init
+- name: dnf-repos - Import a repo setting - init
   ansible.builtin.set_fact:
     dnf_repos_append_repo_content: >
       {{
@@ -18,7 +18,7 @@
       }}
 
 ### Check installed
-- name: Check repos are installed
+- name: dnf-repos - Check repos are installed
   ansible.builtin.stat:
     path: "{{ dnf_repos_repofile }}"
   register: dnf_repos_repofile_stat
@@ -26,19 +26,23 @@
   loop_control:
     loop_var: dnf_repos_repofile
 
-- name: dnf-repos - is installed
+- name: dnf-repos - Is installed
   ansible.builtin.set_fact:
     dnf_repos_repofile_installed: >
       {{ dnf_repos_repofile_stat.results |
         map(attribute='stat.exists') is all }}
 
 ### install
+- name: dnf-repos - Install GPG keys
+  when: not ansible_check_mode and not dnf_repos_repofile_installed
+  ansible.builtin.include_tasks: install_subtasks/install_gpg.yml
+
 - name: dnf-repos - Install repofile
   when: not ansible_check_mode and not dnf_repos_repofile_installed
-  ansible.builtin.include_tasks: install_subtasks/install.yml
+  ansible.builtin.include_tasks: install_subtasks/install_rpm.yml
 
 ### edit repofiles
-- name: dnf-repos - edit repofile
+- name: dnf-repos - Edit repofile
   with_items: "{{ dnf_repos_repo_to_install.repofiles }}"
   loop_control:
     loop_var: dnf_repos_edit_repo

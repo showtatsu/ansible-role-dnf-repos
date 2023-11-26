@@ -1,0 +1,24 @@
+## Install a repository
+- name: dnf-repos - Get RPM
+  ansible.builtin.get_url:
+    url: "{{ dnf_repos_repo_to_install.rpm_url }}"
+    dest: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
+    use_proxy: "{{ dnf_repos_repo_to_install.proxy | bool }}"
+    validate_certs: "{{ dnf_repos_repo_to_install.validate_certs | bool }}"
+  environment:
+    https_proxy: "{{ dnf_repos_repo_to_install.proxy | default(omit) }}"
+
+## Install the repository
+- name: dnf-repos - Check RPM
+  ansible.builtin.shell: rpm -Kv /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
+  changed_when: false
+
+- name: dnf-repos - Install RPM
+  ansible.builtin.yum:
+    name: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
+
+## Cleanup
+- name: dnf-repos - Delete RPM
+  ansible.builtin.file:
+    path: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
+    state: absent

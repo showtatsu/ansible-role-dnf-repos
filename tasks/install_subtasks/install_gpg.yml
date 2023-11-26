@@ -1,3 +1,4 @@
+## Install a repository
 - name: dnf-repos - Get GPG key
   ansible.builtin.get_url: 
     url: "{{ dnf_repos_repo_to_install.gpg_key_url }}"
@@ -7,15 +8,7 @@
   environment:
     https_proxy: "{{ dnf_repos_repo_to_install.proxy | default(omit) }}"
 
-- name: dnf-repos - Get RPM
-  ansible.builtin.get_url:
-    url: "{{ dnf_repos_repo_to_install.rpm_url }}"
-    dest: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
-    use_proxy: "{{ dnf_repos_repo_to_install.proxy | bool }}"
-    validate_certs: "{{ dnf_repos_repo_to_install.validate_certs | bool }}"
-  environment:
-    https_proxy: "{{ dnf_repos_repo_to_install.proxy | default(omit) }}"
-
+## Install the repository
 - name: dnf-repos - Store GPG key
   ansible.builtin.shell:
     cmd: install -m 644 /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.gpg /etc/pki/rpm-gpg/
@@ -25,20 +18,8 @@
   ansible.builtin.shell:
     cmd: rpm --import /etc/pki/rpm-gpg/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.gpg
 
-- name: dnf-repos - Check RPM
-  ansible.builtin.shell: rpm -Kv /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
-  changed_when: false
-
-- name: dnf-repos - Install RPM
-  ansible.builtin.yum: 
-    name: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
-
+## Cleanup
 - name: dnf-repos - Delete GPG key
   ansible.builtin.file: 
     path: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.gpg
-    state: absent
-
-- name: dnf-repos - Delete RPM
-  ansible.builtin.file:
-    path: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
     state: absent
