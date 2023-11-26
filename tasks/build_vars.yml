@@ -28,3 +28,4 @@
   with_items: "{{ dnf_repos_settings }}"
   loop_control:
     label: "dnf_repos_settings: {{ item.name }}"
+  no_log: true
