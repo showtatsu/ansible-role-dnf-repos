@@ -77,6 +77,13 @@ dnf_repos_settings:
   proxy: "{{ dnf_repos_proxy }}"
   validate_certs: true
   override: {}
+  patches:
+  - file: ["/etc/yum.repos.d/epel-testing.repo"]
+    section: ["epel-testing"]
+    settings:
+      baseurl: http://download.fedoraproject.org/pub/epel/testing/{{ ansible_distribution_major_version }}/$basearch
+      metalink: ~
+
 ```
 
 | key           | Required? | description  |
@@ -87,4 +94,5 @@ dnf_repos_settings:
 | `repofiles`   | Required  | .repo file paths to be installed. `proxy` settings are appended on these files. |
 | `proxy`       | Optional  | A proxy URL to access this repository. To use shared config, set `"proxy: {{dnf_repos_proxy}}"` |
 | `validate_certs` | Optional | Whether to verify the repository's certificates. |
-| `override`    | Optional  | Force overrided settings. |
+| `override`    | Optional  | Force overrided settings (obsoluted). |
+| `patches`    | Optional   | Override settings for specific sections in repo files. |

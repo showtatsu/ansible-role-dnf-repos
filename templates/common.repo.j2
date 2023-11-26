@@ -1,13 +1,18 @@
-{% set append_keys = dnf_repos_append_repo_content.keys() %}
 {% for section in dnf_repos_repo_content._keys %}
 {%   set sectiondata = dnf_repos_repo_content[section] %}
+{%   set dnf_repos_section_append_repo_content = dnf_repos_append_repo_content %}
+{%   for patch in dnf_repos_patches_for_file %}
+{%     if (patch.file is not defined or dnf_repos_edit_repo in patch.file) and (patch.section is not defined or section in patch.section) %}
+{%       set _ = dnf_repos_section_append_repo_content.update(patch.settings) %}
+{%     endif %}
+{%   endfor %}
 [{{ section }}]
 {%   for key in sectiondata._keys %}
-{%     if key not in append_keys %}
+{%     if key not in dnf_repos_section_append_repo_content.keys() %}
 {{ key }}={{ sectiondata[key] }}
 {%     endif %}
 {%   endfor %}
-{%   for key, value in dnf_repos_append_repo_content.items() %}
+{%   for key, value in dnf_repos_section_append_repo_content.items() %}
 {%     if value | ternary(true, true, false) %}
 {{ key }}={{ value }}
 {%     endif %}
