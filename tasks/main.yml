@@ -1,5 +1,3 @@
 - include_tasks: build_vars.yml
-- debug:
-    msg: "{{ dnf_repos_settings }}"
 - include_tasks: install_repo.yml
   with_items: "{{ dnf_repos }}"
