@@ -1,0 +1,45 @@
+
+- name: dnf_repos - set info
+  ansible.builtin.set_fact:
+    dnf_repos_repo_to_install: >
+      {{
+        dnf_repos_settings |
+        selectattr('name', 'equalto', item) |
+        first
+      }}
+
+- name: dnf-repos - import a repo setting - init
+  ansible.builtin.set_fact:
+    dnf_repos_append_repo_content: >
+      {{
+        {} |
+        combine({"proxy": dnf_repos_repo_to_install.proxy | default(null)}) |
+        combine(dnf_repos_repo_to_install.override | default({}))
+      }}
+
+### Check installed
+- name: Check repos are installed
+  ansible.builtin.stat:
+    path: "{{ dnf_repos_repofile }}"
+  register: dnf_repos_repofile_stat
+  with_items: "{{ dnf_repos_repo_to_install.repofiles }}"
+  loop_control:
+    loop_var: dnf_repos_repofile
+
+- name: dnf-repos - is installed
+  ansible.builtin.set_fact:
+    dnf_repos_repofile_installed: >
+      {{ dnf_repos_repofile_stat.results |
+        map(attribute='stat.exists') is all }}
+
+### install
+- name: dnf-repos - Install repofile
+  when: not ansible_check_mode and not dnf_repos_repofile_installed
+  ansible.builtin.include_tasks: install_subtasks/install.yml
+
+### edit repofiles
+- name: dnf-repos - edit repofile
+  with_items: "{{ dnf_repos_repo_to_install.repofiles }}"
+  loop_control:
+    loop_var: dnf_repos_edit_repo
+  ansible.builtin.include_tasks: install_subtasks/modify.yml

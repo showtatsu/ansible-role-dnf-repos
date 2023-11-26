@@ -1,0 +1,16 @@
+{% set append_keys = dnf_repos_append_repo_content.keys() %}
+{% for section in dnf_repos_repo_content._keys %}
+{%   set sectiondata = dnf_repos_repo_content[section] %}
+[{{ section }}]
+{%   for key in sectiondata._keys %}
+{%     if key not in append_keys %}
+{{ key }}={{ sectiondata[key] }}
+{%     endif %}
+{%   endfor %}
+{%   for key, value in dnf_repos_append_repo_content.items() %}
+{%     if value | ternary(true, true, false) %}
+{{ key }}={{ value }}
+{%     endif %}
+{%   endfor %}
+
+{% endfor %}

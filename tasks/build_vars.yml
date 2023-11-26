@@ -1,0 +1,30 @@
+# dnf_repos_settings_presets
+# dnf_repos_settings
+
+## Select platform depends vars and update "dnf_repos_settings".
+
+- name: Select platform depends vars
+  ansible.builtin.set_fact:
+    dnf_repos_settings: >
+      {{ (dnf_repos_settings + item.settings) |
+        unique_by_attribute(attribute='name') }}
+  with_items: "{{ dnf_repos_settings_presets }}"
+  loop_control:
+    label: "dnf_repos_settings_presets: {{ item.distributions }}-{{ item.versions }}"
+  when: >
+    ansible_distribution in item.distributions and
+    ansible_distribution_major_version in item.versions
+
+- name: Check settings
+  ansible.builtin.assert:
+    that:
+    - item.name is defined and ((item.name | type_debug) in ['str', 'AnsibleUnsafeText'])
+    - item.rpm_url is defined and ((item.rpm_url | type_debug) in ['str', 'AnsibleUnsafeText'])
+    - (not item.gpg_key_url) or ((item.gpg_key_url | type_debug) in ['str', 'AnsibleUnsafeText'])
+    - item.repofiles is defined and item.repofiles | type_debug == 'list'
+    - (not item.proxy) or ((item.proxy | type_debug) in ['str', 'AnsibleUnsafeText'])
+    # - item.validate_certs is defined
+    - (item.override is not defined) or ((item.override | type_debug) in ['dict'])
+  with_items: "{{ dnf_repos_settings }}"
+  loop_control:
+    label: "dnf_repos_settings: {{ item.name }}"

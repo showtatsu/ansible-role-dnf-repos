@@ -1,0 +1,19 @@
+- name: dnf-repos - import a repo setting
+  ansible.builtin.slurp:
+    src: "{{ dnf_repos_edit_repo }}"
+  register: dnf_repos_edit_repo_content
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: dnf-repos - update a repo setting
+  when: dnf_repos_edit_repo_content.content is defined
+  block:
+  - name: dnf-repos - import a repo setting
+    ansible.builtin.set_fact:
+      dnf_repos_repo_content: >
+        {{ dnf_repos_edit_repo_content.content |
+          b64decode |
+          dnf_repos_parse_repofile }}
+  - name: dnf-repos - write a repo setting
+    ansible.builtin.template:
+      src: common.repo.j2
+      dest: "{{ dnf_repos_edit_repo }}"
