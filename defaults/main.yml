@@ -31,6 +31,9 @@ dnf_repos_settings_presets:
     validate_certs: true
     override: {}
 
+- distributions: ["RedHat"]
+  versions: ["7", "8", "9"]
+  settings:
   - name: elrepo
     rpm_url: https://www.elrepo.org/elrepo-release-{{ ansible_distribution_major_version }}.el{{ ansible_distribution_major_version }}.elrepo.noarch.rpm
     gpg_key_url: https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
