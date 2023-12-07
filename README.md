@@ -1,4 +1,4 @@
-# dnf_repo - Ansible Role
+# dnf_repos - Ansible Role
 
 An Ansible role for managing YUM / DNF repository configuration files (.repo).
 
@@ -11,7 +11,7 @@ for easy installation.
 # in your playbook
 ...
 roles:
-- role: dnf_repo
+- role: dnf_repos
   vars:
     dnf_repos: ["epel"]
     dnf_repos_proxy: "http://192.168.0.1:3128"
