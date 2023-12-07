@@ -21,7 +21,7 @@
         }}
 
   ### Check installed
-  - name: dnf-repos - Check repos are installed
+  - name: dnf-repos - Get repo file is exists
     ansible.builtin.stat:
       path: "{{ dnf_repos_repofile }}"
     register: dnf_repos_repofile_stat
@@ -29,7 +29,7 @@
     loop_control:
       loop_var: dnf_repos_repofile
 
-  - name: dnf-repos - Is installed
+  - name: dnf-repos - Check the all repo files are installed
     ansible.builtin.set_fact:
       dnf_repos_repofile_installed: >
         {{ dnf_repos_repofile_stat.results |
@@ -45,8 +45,28 @@
     ansible.builtin.include_tasks: install_subtasks/install_rpm.yml
 
   ### edit repofiles
+  - name: dnf-repos - After-Check Get repo file is exists
+    ansible.builtin.stat:
+      path: "{{ dnf_repos_repofile }}"
+    register: dnf_repos_repofile_stat_after
+    with_items: "{{ dnf_repos_repo_to_install.repofiles }}"
+    loop_control:
+      loop_var: dnf_repos_repofile
+
+  - name: dnf-repos - After-Check the all repo files are installed
+    ansible.builtin.set_fact:
+      dnf_repos_repofile_installed_after: >
+        {{ dnf_repos_repofile_stat_after.results |
+          map(attribute='stat.exists') is all }}
+
+  - name: dnf-repos - Assert that the all repo files are installed
+    ansible.builtin.assert:
+      that: dnf_repos_repofile_installed_after
+    when: not ansible_check_mode
+
   - name: dnf-repos - Edit repofile
     with_items: "{{ dnf_repos_repo_to_install.repofiles }}"
+    when: dnf_repos_repofile_installed_after
     loop_control:
       loop_var: dnf_repos_edit_repo
     ansible.builtin.include_tasks: install_subtasks/modify.yml
