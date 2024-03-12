@@ -1,11 +1,11 @@
 ## Install a repository
 - name: dnf-repos - Get GPG key
-  ansible.builtin.get_url: 
+  ansible.builtin.get_url:
     url: "{{ dnf_repos_repo_to_install.gpg_key_url }}"
     dest: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.gpg
-    use_proxy: "{{ dnf_repos_repo_to_install.proxy | bool }}"
     validate_certs: "{{ dnf_repos_repo_to_install.validate_certs | bool }}"
   environment:
+    http_proxy: "{{ dnf_repos_repo_to_install.proxy | default(omit) }}"
     https_proxy: "{{ dnf_repos_repo_to_install.proxy | default(omit) }}"
 
 ## Install the repository

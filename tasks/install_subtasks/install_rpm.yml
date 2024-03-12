@@ -3,9 +3,9 @@
   ansible.builtin.get_url:
     url: "{{ dnf_repos_repo_to_install.rpm_url }}"
     dest: /tmp/dnf-repos-tmp-{{ dnf_repos_repo_to_install.name }}.rpm
-    use_proxy: "{{ dnf_repos_repo_to_install.proxy | bool }}"
     validate_certs: "{{ dnf_repos_repo_to_install.validate_certs | bool }}"
   environment:
+    http_proxy: "{{ dnf_repos_repo_to_install.proxy | default(omit) }}"
     https_proxy: "{{ dnf_repos_repo_to_install.proxy | default(omit) }}"
 
 ## Install the repository
